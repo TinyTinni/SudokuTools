@@ -3,11 +3,15 @@ project(sudoku_image_extract)
 
 set(CMAKE_CXX_STANDARD 17)
 
-find_package(OpenCV)
+find_package(OpenCV REQUIRED)
 
+set (SRC
+"image_extract.cpp" "image_extract.h"
+"classifier/classifier.h" "classifier/classifier.cpp"
+)
 
 # Add source to this project's executable.
-add_executable (sudoku_image_extract "image_extract.cpp" "image_extract.h")
+add_executable (sudoku_image_extract ${SRC})
 
 target_include_directories(sudoku_image_extract PRIVATE ${OpenCV_INCLUDE_DIRS})
 target_link_libraries(sudoku_image_extract PRIVATE ${OpenCV_LIBS})
