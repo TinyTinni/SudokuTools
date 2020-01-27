@@ -4,8 +4,8 @@ The tools are standalone and can be combined, the file format is a simple 9x9 cs
 
 Current tools:
 
-- [Solver](./solver/Readme.md)
-- [svg Generator](./svg_gen/Readme.md)
+- [Solver](./solver/)
+- [svg Generator](./svg_gen/)
 
 
 [BSD License](./LICENSE) © Matthias Möller. Made with ♥ in Germany.
