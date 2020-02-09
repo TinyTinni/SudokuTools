@@ -9,6 +9,8 @@ Procedure grid_to_gui(Array in.i(1), Array gadgets.i(1))
   For i.i = 0 To 80
     If in(i) <> 0
       SetGadgetText(gadgets(i), Str(in(i)))
+    Else
+      SetGadgetText(gadgets(i), "")
     EndIf
   Next i
 EndProcedure
@@ -94,20 +96,20 @@ Repeat
     Case #PB_Event_Gadget
       Select EventGadget()
         Case solve_button : 
-          ;gui_to_grid(grid(), string_gadgets())
-          ;grid_to_csv("tmp_grid.csv", grid())
-          ;p = RunProgram("sudoku_solver", "-i tmp_grid.csv -o tmp_solve.csv")
-          ;While ProgramRunning(Compiler) Wend
-          ;csv_to_grid("tmp_solve.csv", grid())
-          ;grid_to_gui(grid(), string_gadgets())
+          gui_to_grid(grid(), string_gadgets())
+          grid_to_csv("tmp_grid.csv", grid())
+          p = RunProgram("python", "../solver/sudoku_solver.py -i tmp_grid.csv -o tmp_solve.csv", "", #PB_Program_Wait)
+          csv_to_grid("tmp_solve.csv", grid())
+          grid_to_gui(grid(), string_gadgets())
       EndSelect
     ;Case #PB_Event_SizeWindow: ResizeGadget(0, 0, 0, WindowWidth(0, #PB_Window_InnerCoordinate), WindowHeight(0, #PB_Window_InnerCoordinate))
     Case #PB_Event_CloseWindow: Break
     EndSelect
 ForEver
 ; IDE Options = PureBasic 5.71 LTS (Windows - x64)
-; CursorPosition = 101
-; FirstLine = 73
+; CursorPosition = 99
+; FirstLine = 74
 ; Folding = -
 ; EnableXP
 ; DPIAware
+; Executable = gui.exe
