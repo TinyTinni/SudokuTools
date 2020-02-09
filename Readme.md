@@ -7,6 +7,7 @@ Current tools:
 - [Image Extractor](./img_extract/) - extracts a sudoku grid from a image file (WIP)
 - [Solver](./solver/) - solves a Sudoku
 - [svg Generator](./svg_gen/) - generates a displayable svg file from a given Sudoku
+- [GUI](./gui/) - A simple gui to generate the csv files
 
 
 [BSD License](./LICENSE) © Matthias Möller. Made with ♥ in Germany.
