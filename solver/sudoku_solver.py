@@ -37,15 +37,13 @@ def add_grid_to_solver(s: solver.SudokuSolver, grid):
                 s.add_filled_number(r[0], c[0], c[1])
 
 
-def grid_as_csv(grid):
-    result = io.StringIO()
-    csv_writer = csv.writer(result)
-    for r in grid:
-        csv_writer.writerow(r)
-    return result.getvalue()
+def grid_as_csv(grid, output):
+    csv_writer = csv.writer(output, lineterminator='\n')
+    #for r in grid:
+    csv_writer.writerows(grid)
 
 
-def main(csv_data):
+def main(csv_data, output):
     grid = grid_from_csv(csv_data)
 
     s = solver.SudokuSolver()
@@ -56,7 +54,7 @@ def main(csv_data):
     if sol is None:
         print("No solution found.")
 
-    return grid_as_csv(sol)
+    grid_as_csv(sol, output)
 
 
 def print_help():
@@ -75,5 +73,4 @@ if __name__ == "__main__":
     p.add_argument("-o", type=argparse.FileType("w"), default="-",
                    help="CSV output file of the solved Sudoku.")
     args = p.parse_args()
-    result = main(args.i)
-    args.o.write(result)
+    main(args.i, args.o)
