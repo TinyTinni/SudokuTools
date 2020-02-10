@@ -55,6 +55,7 @@ OpenWindow(0, #PB_Ignore, #PB_Ignore, 500, 570, "Simple Sudoku Editor", #PB_Wind
 
 ;Add 2 menus:
 CreateMenu(0, WindowID(0))
+MenuTitle("File")
 MenuItem(1, "&Load...")
 MenuItem(2, "&Save As...")
 ;FrameGadget
@@ -67,11 +68,11 @@ For i.i = 0 To 8
 Next i
 
 For i.i = 0 To 80
-  string_gadgets(i) = StringGadget(#PB_Any, 15 + 52*(i%9), 15 + 52*(i/9), 50, 50,"", #PB_String_Numeric|#PB_Text_Center)
+  string_gadgets(i) = StringGadget(#PB_Any, 15 + 52*(i%9), 15 + 52*(i/9), 50, 50,"", #PB_String_Numeric);|#PB_Text_Center)
   SetGadgetAttribute(string_gadgets(i), #PB_String_MaximumLength, 1)
 Next i
 SetGadgetFont(#PB_Default, #PB_Default)   ; Set the loaded Arial 16 font as new standard
-solve_button = ButtonGadget(#PB_Any, 170, 500, 157, 25, "Solve")
+solve_button = ButtonGadget(#PB_Any, 170, 500, 157, 30, "Solve", #PB_Window_SystemMenu)
 
 ;Process window messages until closed:
 Repeat
@@ -106,10 +107,11 @@ Repeat
     Case #PB_Event_CloseWindow: Break
     EndSelect
 ForEver
-; IDE Options = PureBasic 5.71 LTS (Windows - x64)
-; CursorPosition = 99
-; FirstLine = 74
+; IDE Options = PureBasic 5.71 LTS (Linux - x64)
+; CursorPosition = 66
+; FirstLine = 58
 ; Folding = -
 ; EnableXP
 ; DPIAware
 ; Executable = gui.exe
+; SubSystem = gtk2
