@@ -3,4 +3,3 @@
 /img_extract/.vs
 solver/Cargo.lock
 solver/target
-solver/Cargo.toml
