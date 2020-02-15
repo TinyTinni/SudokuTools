@@ -15,34 +15,33 @@ Procedure grid_to_gui(Array in.i(1), Array gadgets.i(1))
   Next i
 EndProcedure
 
-Procedure grid_to_csv(outputname.s, Array values(1))
-  f = CreateFile( #PB_Any, outputname)
+Procedure.s grid_to_csv(Array values(1))
+  result$ = ""
   For i.i = 1 To 81
-    WriteString(f, Str(values(i-1)))
+    result$ = result$+Str(values(i-1))
     If ((i % 9) = 0)
-      WriteStringN(f, "")
+      result$ = result$+~"\n";
     Else
-      WriteString(f, ",")
+      result$ = result$+","
     EndIf
   Next i
-  CloseFile(f)
+  ProcedureReturn result$
 EndProcedure
 
-Procedure csv_to_grid(filename$, Array values(1))
-  If ReadFile(0, filename$)
-    i.i = 0
-    While Eof(0) = 0   
-      line$ = ReadString(0)
-      For k.i = 0 To 8
-        s$ = StringField(line$, k+1, ",")
-        If s$ <> ""
-          values(i*9+k) = Val(s$)
-        EndIf
-      Next k
-      i = i+1
-    Wend
-    CloseFile(0)
-  EndIf
+Procedure csv_to_grid(text$, Array values(1))
+  For i.i = 0 To 8
+    line$ = StringField(text$, i+1, Chr(13))
+    For k.i = 0 To 8
+      s$ = StringField(line$, k+1, ",")
+      If s$ <> ""
+        s$ = Trim(s$)
+        values(i*9+k) = Val(s$)
+      Else
+        values(i*9+k) = 0
+      EndIf
+    Next k
+  Next i
+  
 EndProcedure
 
 
@@ -51,11 +50,11 @@ Dim string_gadgets.i(81)
 Dim grid.i(81)
 
 ;Create Window:
-OpenWindow(0, #PB_Ignore, #PB_Ignore, 500, 570, "Simple Sudoku Editor", #PB_Window_SystemMenu| #PB_Window_MinimizeGadget | #PB_Window_MaximizeGadget | #PB_Window_SizeGadget)
+OpenWindow(0, #PB_Ignore, #PB_Ignore, 500, 570, "Simple Sudoku Editor", #PB_Window_SystemMenu| #PB_Window_MinimizeGadget | #PB_Window_MaximizeGadget | #PB_Window_ScreenCentered)
 
 ;Add 2 menus:
 CreateMenu(0, WindowID(0))
-MenuTitle("File")
+MenuTitle("&File")
 MenuItem(1, "&Load...")
 MenuItem(2, "&Save As...")
 ;FrameGadget
@@ -64,7 +63,7 @@ If LoadFont(0, "Arial", 26)
 EndIf
 
 For i.i = 0 To 8
-  FrameGadget(#PB_Any, (i/3)*156+14, (i%3)*156+14,157, 157, "", #PB_Frame_Flat)
+  FrameGadget(#PB_Any, (i/3)*156+13, (i%3)*156+13,157, 157, "", #PB_Frame_Flat)
 Next i
 
 For i.i = 0 To 80
@@ -72,25 +71,35 @@ For i.i = 0 To 80
   SetGadgetAttribute(string_gadgets(i), #PB_String_MaximumLength, 1)
 Next i
 SetGadgetFont(#PB_Default, #PB_Default)   ; Set the loaded Arial 16 font as new standard
-solve_button = ButtonGadget(#PB_Any, 170, 500, 157, 30, "Solve", #PB_Window_SystemMenu)
+solve_button = ButtonGadget(#PB_Any, 170, 500, 157, 30, "Solve")
 
 ;Process window messages until closed:
 Repeat
     Select WaitWindowEvent()
     Case #PB_Event_Menu
       Select EventMenu()
-        Case 1: 
+        Case 1:  ; Open
           File$ = OpenFileRequester("Please choose file to load", "", "CSV (*.csv)|*.csv", 0)
           If File$
-            csv_to_grid(File$, grid())
-            grid_to_gui(grid(), string_gadgets())
+            text$ = ""
+            If ReadFile(0, File$)
+              While Eof(0) = 0
+                text$ = text$+ ReadString(0)+ Chr(13)
+              Wend
+              CloseFile(0)
+              csv_to_grid(text$, grid())
+              grid_to_gui(grid(), string_gadgets())
+            EndIf
           EndIf
           ;Break
-        Case 2: 
-          File$ = OpenFileRequester("Please choose file to save into", "", "CSV (*.csv)|*.csv", 0)
+        Case 2: ; Save
+          File$ = SaveFileRequester("Please choose file to save into", "", "CSV (*.csv)|*.csv", 0)
           If File$
             gui_to_grid(grid(), string_gadgets())
-            grid_to_csv(File$, grid())
+            csv$ = grid_to_csv(grid())
+            f = CreateFile( #PB_Any, File$)
+            WriteString(f, csv$)
+            CloseFile(f)
           EndIf
           ;Break
       EndSelect
@@ -98,20 +107,32 @@ Repeat
       Select EventGadget()
         Case solve_button : 
           gui_to_grid(grid(), string_gadgets())
-          grid_to_csv("tmp_grid.csv", grid())
-          p = RunProgram("python", "../solver/sudoku_solver.py -i tmp_grid.csv -o tmp_solve.csv", "", #PB_Program_Wait)
-          csv_to_grid("tmp_solve.csv", grid())
-          grid_to_gui(grid(), string_gadgets())
+          csv$ = grid_to_csv(grid())
+          p = RunProgram("./solver", "", "", #PB_Program_Open | #PB_Program_Hide | #PB_Program_Write | #PB_Program_Read)
+          If p
+            WriteProgramString(p, csv$)
+            WriteProgramData(p, #PB_Program_Eof , 1)
+            While ProgramRunning(p)
+              If AvailableProgramOutput(p)
+                Output$ + ReadProgramString(p) + Chr(13)
+              EndIf
+            Wend
+            csv_to_grid(Output$, grid())
+            grid_to_gui(grid(), string_gadgets())
+          Else
+            MessageRequester("Could not start 'solver'", "Could not start 'solver'!", #PB_MessageRequester_Ok | #PB_MessageRequester_Error)
+          EndIf
       EndSelect
     ;Case #PB_Event_SizeWindow: ResizeGadget(0, 0, 0, WindowWidth(0, #PB_Window_InnerCoordinate), WindowHeight(0, #PB_Window_InnerCoordinate))
     Case #PB_Event_CloseWindow: Break
     EndSelect
 ForEver
 ; IDE Options = PureBasic 5.71 LTS (Linux - x64)
-; CursorPosition = 66
-; FirstLine = 58
+; CursorPosition = 99
+; FirstLine = 93
 ; Folding = -
 ; EnableXP
 ; DPIAware
-; Executable = gui.exe
+; Executable = solver_gui
+; CPU = 5
 ; SubSystem = gtk2

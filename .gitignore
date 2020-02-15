@@ -1,5 +1,6 @@
 
-__pycache__/
-venv/
 /img_extract/out
 /img_extract/.vs
+solver/Cargo.lock
+solver/target
+solver/Cargo.toml

@@ -26,7 +26,7 @@ class TestableSolver:
         # at least once
         self.solver.add_clause(literals)
 
-        for i, v in enumerate(literals):
+        for i in literals:
             for j in range(i + 1, len(literals)):
                 self.solver.add_clause([-literals[i], -literals[j]])
 
