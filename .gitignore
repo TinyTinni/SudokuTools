@@ -1,6 +1,7 @@
 
 /img_extract/out
 /img_extract/.vs
+/img_extract/build
 solver/Cargo.lock
 solver/target
 Cargo.lock

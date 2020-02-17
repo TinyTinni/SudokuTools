@@ -57,19 +57,24 @@ CreateMenu(0, WindowID(0))
 MenuTitle("&File")
 MenuItem(1, "&Load...")
 MenuItem(2, "&Save As...")
+MenuItem(3, "&Quit")
 ;FrameGadget
 If LoadFont(0, "Arial", 26)
   SetGadgetFont(#PB_Default, FontID(0))   ; Set the loaded Arial 16 font as new standard
 EndIf
 
-For i.i = 0 To 8
-  FrameGadget(#PB_Any, (i/3)*156+13, (i%3)*156+13,157, 157, "", #PB_Frame_Flat)
-Next i
-
+flags = #PB_String_Numeric;
+CompilerIf (#WINDOWS_TARGET)
+  flags = flags | #PB_Text_Center;
+CompilerEndIf
 For i.i = 0 To 80
-  string_gadgets(i) = StringGadget(#PB_Any, 15 + 52*(i%9), 15 + 52*(i/9), 50, 50,"", #PB_String_Numeric);|#PB_Text_Center)
+  string_gadgets(i) = StringGadget(#PB_Any, 15 + 52*(i%9), 15 + 52*(i/9), 50, 50,"", flags);
   SetGadgetAttribute(string_gadgets(i), #PB_String_MaximumLength, 1)
 Next i
+For i.i = 0 To 8
+  FrameGadget(#PB_Any, (i/3)*156+13, (i%3)*156+13,158, 158, "", #PB_Frame_Flat)
+Next i
+
 SetGadgetFont(#PB_Default, #PB_Default)   ; Set the loaded Arial 16 font as new standard
 solve_button = ButtonGadget(#PB_Any, 170, 500, 157, 30, "Solve")
 
@@ -101,7 +106,8 @@ Repeat
             WriteString(f, csv$)
             CloseFile(f)
           EndIf
-          ;Break
+         Case 3:
+          Break
       EndSelect
     Case #PB_Event_Gadget
       Select EventGadget()
@@ -127,12 +133,10 @@ Repeat
     Case #PB_Event_CloseWindow: Break
     EndSelect
 ForEver
-; IDE Options = PureBasic 5.71 LTS (Linux - x64)
-; CursorPosition = 99
-; FirstLine = 93
+
+; IDE Options = PureBasic 5.71 LTS (Windows - x64)
+; CursorPosition = 109
+; FirstLine = 86
 ; Folding = -
 ; EnableXP
-; DPIAware
 ; Executable = solver_gui
-; CPU = 5
-; SubSystem = gtk2
