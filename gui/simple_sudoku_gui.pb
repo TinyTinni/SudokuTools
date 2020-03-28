@@ -64,7 +64,7 @@ If LoadFont(0, "Arial", 26)
 EndIf
 
 flags = #PB_String_Numeric;
-CompilerIf (#WINDOWS_TARGET)
+CompilerIf #PB_Compiler_OS = #PB_OS_Windows
   flags = flags | #PB_Text_Center;
 CompilerEndIf
 For i.i = 0 To 80
