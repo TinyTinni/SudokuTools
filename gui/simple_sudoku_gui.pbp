@@ -7,19 +7,23 @@
   <section name="data">
     <explorer view="C:\ProgramData\PureBasic\Examples\" pattern="0"/>
     <log show="1"/>
-    <lastopen date="2020-02-17 17:05" user="Matthias" host="DESKTOP-54HMHAV"/>
+    <lastopen date="2020-02-19 16:27" user="Matthias" host="DESKTOP-MTRQAAF"/>
   </section>
   <section name="files">
     <file name="simple_sudoku_gui.pb">
-      <config load="1" scan="1" panel="1" warn="1" lastopen="0" panelstate="+"/>
-      <fingerprint md5="d5329aba780e95a8f44061070b871d68"/>
+      <config load="1" scan="1" panel="1" warn="1" lastopen="1" panelstate="+"/>
+      <fingerprint md5="7db423a26dc796b4df2033840f80baf0"/>
     </file>
   </section>
   <section name="targets">
-    <target name="Default Target" enabled="1" default="1">
-      <inputfile value=""/>
-      <outputfile value=""/>
-      <options xpskin="1" debug="1"/>
+    <target name="Windows Target" enabled="1" default="1">
+      <inputfile value="simple_sudoku_gui.pb"/>
+      <outputfile value="solver_gui.exe.exe"/>
+      <executable value="solver_gui.exe.exe"/>
+      <options xpskin="1" dpiaware="1" debug="1"/>
+      <constants>
+        <constant value="#WINDOWS_TARGET" enable="1"/>
+      </constants>
     </target>
   </section>
 </project>
