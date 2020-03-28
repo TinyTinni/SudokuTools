@@ -1,12 +1,6 @@
 mod varisat_solver;
 use varisat_solver::*;
 
-// impl std::ops::IndexMut<(usize, usize)> for Grid {
-//     fn index_mut(&mut self, row_column: (usize, usize)) -> &mut Self::Output {
-//         &mut self.data[row_column.0 * 9 + row_column.1]
-//     }
-// }
-
 pub struct Grid {
     pub data: [u8; 81],
 }
@@ -31,8 +25,8 @@ impl Grid {
         self.data[row * 9 + column] = value;
     }
 
-    pub fn get_value(&self, row: usize, column: usize) -> u8 {
-        self.data[row * 9 + column]
+    pub fn get_value(&self, row: usize, column: usize) -> &u8 {
+        &self.data[row * 9 + column]
     }
 
     pub fn assumptions(&self) -> Vec<varisat::Lit> {
@@ -49,10 +43,16 @@ impl Grid {
     }
 }
 
+// impl std::ops::IndexMut<(usize, usize)> for Grid {
+//     fn index_mut(&mut self, row_column: (usize, usize)) -> &mut Self::Output {
+//         &mut self.data[row_column.0 * 9 + row_column.1]
+//     }
+// }
+
 impl std::ops::Index<(usize, usize)> for Grid {
     type Output = u8;
     fn index(&self, row_column: (usize, usize)) -> &Self::Output {
-        &self.data[row_column.0 * 9 + row_column.1]
+        self.get_value(row_column.0, row_column.1)
     }
 }
 

@@ -27,12 +27,9 @@ impl<'a> SudokuSolver<'a> {
     pub fn assume(&mut self, assumptions: &[varisat::Lit]) {
         self.solver.assume(assumptions)
     }
-    fn assumption_value(v: u8, row: usize, column: usize) -> usize {
-        row * 9 * 9 + column * 9 + (v as usize) + 1
-    }
 
     pub fn value_to_lit(v: u8, row: usize, column: usize) -> varisat::Lit {
-        let index = SudokuSolver::assumption_value(v - 1, row, column);
+        let index = row * 9 * 9 + column * 9 + (v as usize);
         varisat::Lit::from_index(index, true)
     }
 
@@ -43,10 +40,6 @@ impl<'a> SudokuSolver<'a> {
         let column = (v - row * 9 * 9) / 9;
         let v = v - row * 9 * 9 - column * 9;
         return (v as u8, row, column);
-    }
-
-    fn value_to_index(row: usize, column: usize, value: usize) -> usize {
-        return row * 9 * 9 + column * 9 + value + 1;
     }
 
     fn exactly_one(solver: &mut varisat::Solver, lits: &[varisat::Lit]) {
@@ -66,8 +59,7 @@ impl<'a> SudokuSolver<'a> {
             for c in 0..columns {
                 let mut lits = Vec::with_capacity(9);
                 for v in 0..9 {
-                    let i = SudokuSolver::value_to_index(r, c, v);
-                    lits.push(varisat::Lit::from_index(i, true));
+                    lits.push(SudokuSolver::value_to_lit(v, r, c));
                 }
                 SudokuSolver::exactly_one(solver, &lits);
             }
@@ -78,8 +70,7 @@ impl<'a> SudokuSolver<'a> {
         for v in 0..9 {
             let mut lits = Vec::with_capacity(9);
             for r in 0..9 {
-                let i = SudokuSolver::value_to_index(r, column, v);
-                lits.push(varisat::Lit::from_index(i, true));
+                lits.push(SudokuSolver::value_to_lit(v, r, column));
             }
             SudokuSolver::exactly_one(solver, &lits);
         }
@@ -89,8 +80,7 @@ impl<'a> SudokuSolver<'a> {
         for v in 0..9 {
             let mut lits = Vec::with_capacity(9);
             for c in 0..9 {
-                let i = SudokuSolver::value_to_index(row, c, v);
-                lits.push(varisat::Lit::from_index(i, true));
+                lits.push(SudokuSolver::value_to_lit(v, row, c));
             }
             SudokuSolver::exactly_one(solver, &lits);
         }
@@ -100,8 +90,11 @@ impl<'a> SudokuSolver<'a> {
         for v in 0..9 {
             let mut lits = Vec::with_capacity(9);
             for i in 0..9 {
-                let index = SudokuSolver::value_to_index(row + (i / 3), column + (i % 3), v);
-                lits.push(varisat::Lit::from_index(index, true));
+                lits.push(SudokuSolver::value_to_lit(
+                    v,
+                    row + (i / 3),
+                    column + (i % 3),
+                ));
             }
             SudokuSolver::exactly_one(solver, &lits);
         }
@@ -147,29 +140,21 @@ mod test {
 
         let mut vec = Vec::new();
         for i in 0..8 {
-            let i = SudokuSolver::value_to_index(0, i, i);
-            vec.push(varisat::Lit::from_index(i, true));
+            let v: u8 = i as u8;
+            vec.push(SudokuSolver::value_to_lit(v, 0, i));
         }
 
         solver.assume(&vec);
         assert_eq!(solver.solve().unwrap(), true);
 
-        let proofed_literal = varisat::Lit::from_index(SudokuSolver::value_to_index(0, 8, 8), true);
+        let proofed_literal = SudokuSolver::value_to_lit(8, 0, 8);
         let m = solver.model().unwrap();
         assert_eq!(m.contains(&proofed_literal), true);
     }
 
     #[test]
     fn test_value_to_index() {
-        let (row, column, value) = SudokuSolver::lit_to_value(varisat::Lit::from_index(432, true));
-        assert_eq!(row, 5);
-        assert_eq!(column, 2);
-        assert_eq!(value, 8);
-    }
-
-    #[test]
-    fn test_index_to_value() {
-        let (row, column, value) = SudokuSolver::lit_to_value(varisat::Lit::from_index(432, true));
+        let (value, row, column) = SudokuSolver::lit_to_value(varisat::Lit::from_index(432, true));
         assert_eq!(row, 5);
         assert_eq!(column, 2);
         assert_eq!(value, 8);
