@@ -16,14 +16,13 @@ impl<'a> SudokuSolver<'a> {
         }
         SudokuSolver { solver: s }
     }
-    pub fn solve(&mut self) -> Option<Grid> {
+    pub fn solve(&mut self) -> Option<Vec<varisat::Lit>> {
         let sol = self.solver.solve();
 
         if sol.is_err() {
             return None;
         }
-        let m = self.solver.model().unwrap();
-        Some(Grid::from_model(&m))
+        self.solver.model()
     }
     pub fn assume(&mut self, assumptions: &[varisat::Lit]) {
         self.solver.assume(assumptions)
@@ -32,13 +31,13 @@ impl<'a> SudokuSolver<'a> {
         row * 9 * 9 + column * 9 + (v as usize) + 1
     }
 
-    fn value_to_lit(v: u8, row: usize, column: usize) -> varisat::Lit {
+    pub fn value_to_lit(v: u8, row: usize, column: usize) -> varisat::Lit {
         let index = SudokuSolver::assumption_value(v - 1, row, column);
         varisat::Lit::from_index(index, true)
     }
 
     // return (value, row, column)
-    fn lit_to_value(i: varisat::Lit) -> (u8, usize, usize) {
+    pub fn lit_to_value(i: varisat::Lit) -> (u8, usize, usize) {
         let v = i.index() - 1;
         let row = v / (9 * 9);
         let column = (v - row * 9 * 9) / 9;
@@ -106,55 +105,6 @@ impl<'a> SudokuSolver<'a> {
             }
             SudokuSolver::exactly_one(solver, &lits);
         }
-    }
-}
-
-pub struct Grid {
-    pub data: [u8; 81],
-}
-
-impl Grid {
-    pub fn new() -> Grid {
-        Grid { data: [0; 81] }
-    }
-    fn from_model(model: &[varisat::Lit]) -> Grid {
-        let mut result = Grid::new();
-
-        for &i in model {
-            if i.is_positive() {
-                let (v, r, c) = SudokuSolver::lit_to_value(i);
-                result.set_value(v + 1, r, c);
-            }
-        }
-        result
-    }
-
-    pub fn set_value(&mut self, value: u8, row: usize, column: usize) {
-        self.data[row * 9 + column] = value;
-    }
-
-    pub fn get_value(&self, row: usize, column: usize) -> u8 {
-        self.data[row * 9 + column]
-    }
-
-    pub fn assumptions(&self) -> Vec<varisat::Lit> {
-        let mut result: Vec<varisat::Lit> = Vec::new();
-
-        for (i, &v) in self.data.iter().enumerate() {
-            if v > 0 {
-                let row = i % 9;
-                let column = i / 9;
-                result.push(SudokuSolver::value_to_lit(v, row, column));
-            }
-        }
-        result
-    }
-}
-
-impl std::ops::Index<(usize, usize)> for Grid {
-    type Output = u8;
-    fn index(&self, row_column: (usize, usize)) -> &Self::Output {
-        &self.data[row_column.0 * 9 + row_column.1]
     }
 }
 
