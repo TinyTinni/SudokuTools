@@ -1,3 +1,4 @@
+extern crate array_init;
 extern crate varisat;
 use varisat::ExtendFormula;
 
@@ -16,24 +17,26 @@ impl<'a> SudokuSolver<'a> {
         }
         SudokuSolver { solver: s }
     }
-    pub fn solve(&mut self) -> Option<Vec<varisat::Lit>> {
+
+    /// solves a sudoku.
+    /// # Arguments
+    /// * `assumptions` - Already filled numbers. Use Grid to generate assumptions from already filled cells.
+    pub fn solve(&mut self, assumptions: &[varisat::Lit]) -> Option<Vec<varisat::Lit>> {
+        self.solver.assume(assumptions);
         let sol = self.solver.solve();
-
-        if sol.is_err() {
-            return None;
+        match sol {
+            Ok(_) => self.solver.model(),
+            Err(_) => None,
         }
-        self.solver.model()
-    }
-    pub fn assume(&mut self, assumptions: &[varisat::Lit]) {
-        self.solver.assume(assumptions)
     }
 
+    /// returns a literal from a sudoku cell \note: value \in [0;8]
     pub fn value_to_lit(v: u8, row: usize, column: usize) -> varisat::Lit {
-        let index = row * 9 * 9 + column * 9 + (v as usize);
+        let index = row * 9 * 9 + column * 9 + (v as usize) + 1;
         varisat::Lit::from_index(index, true)
     }
 
-    // return (value, row, column)
+    /// returns a sudoku cell with value from a literal "(value, row, column)" \note: value \in [0;8]
     pub fn lit_to_value(i: varisat::Lit) -> (u8, usize, usize) {
         let v = i.index() - 1;
         let row = v / (9 * 9);
@@ -47,8 +50,9 @@ impl<'a> SudokuSolver<'a> {
         solver.add_clause(lits);
 
         //make pairs, if one is true, the other has to be false
-        for i in 0..lits.len() {
-            for j in (i + 1)..lits.len() {
+        let n = lits.len();
+        for i in 0..n {
+            for j in (i + 1)..n {
                 solver.add_clause(&[!lits[i], !lits[j]]);
             }
         }
@@ -57,10 +61,8 @@ impl<'a> SudokuSolver<'a> {
     fn add_uniquness(solver: &mut varisat::Solver, rows: usize, columns: usize) {
         for r in 0..rows {
             for c in 0..columns {
-                let mut lits = Vec::with_capacity(9);
-                for v in 0..9 {
-                    lits.push(SudokuSolver::value_to_lit(v, r, c));
-                }
+                let lits: [varisat::Lit; 9] =
+                    array_init::array_init(|v| SudokuSolver::value_to_lit(v as u8, r, c));
                 SudokuSolver::exactly_one(solver, &lits);
             }
         }
@@ -68,34 +70,25 @@ impl<'a> SudokuSolver<'a> {
 
     fn add_column_rule(solver: &mut varisat::Solver, column: usize) {
         for v in 0..9 {
-            let mut lits = Vec::with_capacity(9);
-            for r in 0..9 {
-                lits.push(SudokuSolver::value_to_lit(v, r, column));
-            }
+            let lits: [varisat::Lit; 9] =
+                array_init::array_init(|r| SudokuSolver::value_to_lit(v, r, column));
             SudokuSolver::exactly_one(solver, &lits);
         }
     }
 
     fn add_row_rule(solver: &mut varisat::Solver, row: usize) {
         for v in 0..9 {
-            let mut lits = Vec::with_capacity(9);
-            for c in 0..9 {
-                lits.push(SudokuSolver::value_to_lit(v, row, c));
-            }
+            let lits: [varisat::Lit; 9] =
+                array_init::array_init(|c| SudokuSolver::value_to_lit(v, row, c));
             SudokuSolver::exactly_one(solver, &lits);
         }
     }
 
     fn add_box_rule(solver: &mut varisat::Solver, row: usize, column: usize) {
         for v in 0..9 {
-            let mut lits = Vec::with_capacity(9);
-            for i in 0..9 {
-                lits.push(SudokuSolver::value_to_lit(
-                    v,
-                    row + (i / 3),
-                    column + (i % 3),
-                ));
-            }
+            let lits: [varisat::Lit; 9] = array_init::array_init(|i| {
+                SudokuSolver::value_to_lit(v, row + (i / 3), column + (i % 3))
+            });
             SudokuSolver::exactly_one(solver, &lits);
         }
     }
@@ -157,6 +150,6 @@ mod test {
         let (value, row, column) = SudokuSolver::lit_to_value(varisat::Lit::from_index(432, true));
         assert_eq!(row, 5);
         assert_eq!(column, 2);
-        assert_eq!(value, 8);
+        assert_eq!(value, 9);
     }
 }

@@ -7,13 +7,11 @@ extern crate clap;
 use clap::Arg;
 
 fn write_grid<W: std::io::Write>(mut out: W, grid_data: &[u8; 81]) {
-    for i in 0..81 {
-        write!(out, "{}", grid_data[i]).unwrap();
-        if (i + 1) % 9 == 0 {
-            out.write(b"\n").unwrap();
-        } else {
-            out.write(b",").unwrap();
-        }
+    //let inserter = [",", ",", ",", ",", ",", ",", ",", ",", "\n"];
+    //for (&v, &extra) in grid_data.iter().zip(inserter.iter().cycle()) {
+    for (i, &v) in grid_data.iter().enumerate() {
+        let extra = if (i + 1) % 9 == 0 { "\n" } else { "," };
+        write!(out, "{}{}", v, extra).unwrap();
     }
 }
 
@@ -28,7 +26,7 @@ fn grid_from_csv<R: std::io::Read>(input: R) -> solver::Grid {
         let record = result.unwrap();
         for (c, i) in record.iter().enumerate() {
             match i {
-                "" => grid.set_value(0, r, c),
+                "" => grid[(r, c)] = 0,
                 "\n" => continue,
                 t => {
                     let mut n = i.parse::<u8>().expect(&format!(
@@ -36,7 +34,7 @@ fn grid_from_csv<R: std::io::Read>(input: R) -> solver::Grid {
                         i, r, c
                     ));
                     n = std::cmp::min(std::cmp::max(n, 0), 9);
-                    grid.set_value(n, r, c)
+                    grid[(r, c)] = n
                 }
             }
         }

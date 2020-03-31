@@ -7,6 +7,7 @@ edition = "2018"
 [dependencies]
 varisat = "^0.2.1"
 csv = "1.1"
+array-init = "0.1"
 
 [dependencies.clap]
 version = "2.33.0"
