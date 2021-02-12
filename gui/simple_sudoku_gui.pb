@@ -44,39 +44,41 @@ Procedure csv_to_grid(text$, Array values(1))
   
 EndProcedure
 
+Global Dim string_gadgets.i(81)
+Global Dim grid.i(81)
 
+Procedure open_main_window()
+  ;Create Window:
+  OpenWindow(0, #PB_Ignore, #PB_Ignore, 500, 570, "Simple Sudoku Editor", #PB_Window_SystemMenu| #PB_Window_MinimizeGadget | #PB_Window_MaximizeGadget | #PB_Window_ScreenCentered)
+  
+  ;Add 2 menus:
+  CreateMenu(0, WindowID(0))
+  MenuTitle("&File")
+  MenuItem(1, "&Load...")
+  MenuItem(2, "&Save As...")
+  MenuItem(3, "&Quit")
+  ;FrameGadget
+  If LoadFont(0, "Arial", 26)
+    SetGadgetFont(#PB_Default, FontID(0))   ; Set the loaded Arial 16 font as new standard
+  EndIf
+  
+  flags = #PB_String_Numeric;
+  CompilerIf #PB_Compiler_OS = #PB_OS_Windows
+    flags = flags | #PB_Text_Center;
+  CompilerEndIf
+  For i.i = 0 To 80
+    string_gadgets(i) = StringGadget(#PB_Any, 15 + 52*(i%9), 15 + 52*(i/9), 50, 50,"", flags);
+    SetGadgetAttribute(string_gadgets(i), #PB_String_MaximumLength, 1)
+  Next i
+  For i.i = 0 To 8
+    FrameGadget(#PB_Any, (i/3)*156+13, (i%3)*156+13,158, 158, "", #PB_Frame_Flat)
+  Next i
+  
+  SetGadgetFont(#PB_Default, #PB_Default)   ; Set the loaded Arial 16 font as new standard
+  solve_button = ButtonGadget(#PB_Any, 170, 500, 157, 30, "Solve")
+EndProcedure
 
-Dim string_gadgets.i(81)
-Dim grid.i(81)
-
-;Create Window:
-OpenWindow(0, #PB_Ignore, #PB_Ignore, 500, 570, "Simple Sudoku Editor", #PB_Window_SystemMenu| #PB_Window_MinimizeGadget | #PB_Window_MaximizeGadget | #PB_Window_ScreenCentered)
-
-;Add 2 menus:
-CreateMenu(0, WindowID(0))
-MenuTitle("&File")
-MenuItem(1, "&Load...")
-MenuItem(2, "&Save As...")
-MenuItem(3, "&Quit")
-;FrameGadget
-If LoadFont(0, "Arial", 26)
-  SetGadgetFont(#PB_Default, FontID(0))   ; Set the loaded Arial 16 font as new standard
-EndIf
-
-flags = #PB_String_Numeric;
-CompilerIf #PB_Compiler_OS = #PB_OS_Windows
-  flags = flags | #PB_Text_Center;
-CompilerEndIf
-For i.i = 0 To 80
-  string_gadgets(i) = StringGadget(#PB_Any, 15 + 52*(i%9), 15 + 52*(i/9), 50, 50,"", flags);
-  SetGadgetAttribute(string_gadgets(i), #PB_String_MaximumLength, 1)
-Next i
-For i.i = 0 To 8
-  FrameGadget(#PB_Any, (i/3)*156+13, (i%3)*156+13,158, 158, "", #PB_Frame_Flat)
-Next i
-
-SetGadgetFont(#PB_Default, #PB_Default)   ; Set the loaded Arial 16 font as new standard
-solve_button = ButtonGadget(#PB_Any, 170, 500, 157, 30, "Solve")
+open_main_window()
 
 ;Process window messages until closed:
 Repeat
@@ -134,9 +136,9 @@ Repeat
     EndSelect
 ForEver
 
-; IDE Options = PureBasic 5.71 LTS (Windows - x64)
-; CursorPosition = 109
-; FirstLine = 86
-; Folding = -
+; IDE Options = PureBasic 5.73 LTS (Windows - x64)
+; CursorPosition = 80
+; FirstLine = 65
+; Folding = --
 ; EnableXP
 ; Executable = solver_gui
